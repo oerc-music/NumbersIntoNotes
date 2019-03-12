@@ -2646,60 +2646,6 @@ function outputMeld() {
     document.getElementById("meldtext").value = rollbuffer;
 }
 
-// W3C prov-n format
-
-function outputProv() {
-
-    var parameterString = "";
-    for (var i=0; i < parameters.length; i++) {
-        if (parameterString) { parameterString += ", "; }
-        parameterString += "nin:" + parameters[i][0] + 
-                           "=\"" + parameters[i][1] + "\"";
-    }
-
-    var output = [
-        "// " + mTitle,
-        "// " + mDate,
-        "document",
-        "// Stage 1 - Generate Integers",
-        "prefix prov <http://www.w3.org/ns/prov#>",
-        "prefix nin <http://www.nin.oerc.ox.ac.uk/var#>",
-        "entity(nin:IntegerSequence)",
-        "activity(nin:" + algorithm + (parameterString ? 
-            ", [" + parameterString + "])" : ")"),
-        "wasGeneratedBy(nin:IntegerSequence, nin:" + algorithm + ", -)",
-        "// Stage 2 - Clock Arithmetic",
-        "entity(nin:ModSequence)",
-        "activity(nin:ReduceByModulus, [nin:mod=\"" + modulus + "\"])",
-        "wasGeneratedBy(nin:ModSequence, nin:ReduceByModulus, -)",
-        "used(nin:ReduceByModulus, nin:IntegerSequence, -)",
-        "// Stage 3 - Play",
-        "entity(nin:Selection)",
-        "activity(nin:Select, [prov:type=\"edit\"" + 
-            ", nin:count=\"" + mSelection_n + "\"" +
-            ", nin:bl=\"" + mSelection_bl + "\"" +
-            ", nin:tr=\"" + mSelection_tr + "\"])",
-        "wasGeneratedBy(nin:Selection, nin:Select, -)",
-        "used(nin:Select, nin:ModSequence, -)",
-        "entity(nin:Composer)",
-        "agent(nin:Composer, [prov:type=\"prov:Person\"])",
-        "wasAssociatedWith(nin:Selection, nin:Composer, -)",
-        "entity(nin:Notes)",
-        "activity(nin:Map, [nin:pitch=\"" + pitch + "\", nin:octave=\"" 
-                          + octave + "\", nin:scale=\"" + mScale + "\"])",
-        "wasGeneratedBy(nin:Notes, nin:Map, -)",
-        "used(nin:Map, nin:Selection, -)",
-        "// Stage 4 - Export",
-        "entity(nin:midi/" + mGuid + ", [prov:type=\"document\"])",
-        "activity(nin:Export)",
-        "wasGeneratedBy(nin:midi/" + mGuid + ", nin:Export, -)",
-        "used(nin:Export, nin:Notes, -)",
-        "endDocument",
-        "// NumbersIntoNotes ID " + mGuid ];
-
-    document.getElementById("provtext").value = output.join("\n");
-}
-
 // Output OAI-ORE annotations (.rdf)
 
 // This is placeholder code for illustrative purposes only
@@ -2732,37 +2678,6 @@ function outputOre() {
         rollbuffer += output[i] + "\n";
     }
     document.getElementById("oretext").value = rollbuffer;
-}
-
-function doSubmit() {
-    document.getElementById("exportform").submit();
-}
-
-function playNote(note) {
-    piano.play(note, audioCtx.currentTime, 0.5);
-}
-
-// This createGuid code comes from 
-// http://byronsalau.com/blog/how-to-create-a-guid-uuid-in-javascript/
-// and was chosen for conciseness - there may be better solutions
-
-function createGuid()
-{
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
-        return v.toString(16);
-    });
-}
-
-// initPage() is run when the body has loaded to reset textareas
-// in case the browser reinstates them (e.g. loading a saved page).
-// In principal the application state can be recovered from the DOM
-// so exporting innerHTML may be a way of saving the experiment in
-// future versions.
-
-function initPage() {
-    document.getElementById("sequence").innerHTML = "";
-    document.getElementById("modsequence").value = "";
 } 
 
 // end of NotesIntoNumbers.js
