@@ -2566,8 +2566,6 @@ function outputMei() {
 
 function outputMeld() {
 
-    outputMei(); // force MEI to run as meld needs key informationd derived there
-
     // get first and last pitch class for meld metadata
 
     var imin = selected ? selleft : 0;
@@ -2575,7 +2573,7 @@ function outputMeld() {
     var allnotes = [];   // Make list of all notes as midi note numbers
 
     for (var i=imin; i <= imax; i++) {
-        for (j=0; j < nRows; j++) {
+        for (var j=0; j < nRows; j++) {
             if (roll[i][nRows - j - 1] > (selected ? 1 : 0)) {
                 allnotes.push(midiNotes[j]);
             }
@@ -2638,12 +2636,7 @@ function outputMeld() {
 //    output.push("  }");
 //    output.push("}");
 
-    var rollbuffer = ""; // encodes text for copy and paste at client
-
-    for (i=0; i < output.length; i++) {
-        rollbuffer += output[i] + "\n";
-    }
-    document.getElementById("meldtext").value = rollbuffer;
+    document.getElementById("meldtext").value = output.join("\n"); // encodes text for copy and paste at client;
 }
 
 // Output OAI-ORE annotations (.rdf)
@@ -2765,5 +2758,25 @@ function initPage() {
     document.getElementById("sequence").innerHTML = "";
     document.getElementById("modsequence").value = "";
 } 
+
+function generateLoads() {
+	console.log("Creating a load of MEI and MELD...")
+
+	// setup
+	doFibonacci();
+	doModsequence();
+	initRoll();
+
+	// Generate files
+	outputMei();
+	outputMeld();
+	document.getElementById('meiform').submit();
+	// Save files
+
+	setTimeout( function() {
+		document.getElementById('meldform').submit();
+	}, 500 );
+
+}
 
 // end of NotesIntoNumbers.js
