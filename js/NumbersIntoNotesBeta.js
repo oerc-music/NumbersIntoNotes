@@ -1111,8 +1111,8 @@ function mouseDown(e) {
 function mouseMove(e) {
     var r = canvas.getBoundingClientRect();
     
-    var i = Math.floor((e.clientX - r.left) / cellWidth);
-    var j = Math.floor((e.clientY - r.top) / cellHeight);
+    var i = Math.ceil((e.clientX - r.left) / cellWidth);
+    var j = Math.ceil((e.clientY - r.top) / cellHeight);
 
     document.getElementById("notenumber").innerHTML = nRows - j - 1;
     document.getElementById("notename").innerHTML = 
@@ -1202,7 +1202,7 @@ function initRoll() {
 
     // fill out roll as empty (cell=0) except notes from modSeq (cell=1)
 
-    for (var i=0; i < seqLen; i++) {
+    for ( i=0; i < seqLen; i++) {
         roll[i] = [];
         for (var j=0; j < nRows; j++) {
             roll[i][j] = 0;
@@ -1225,6 +1225,7 @@ function initRoll() {
 // repeatedly by mousemove while dragging a selection
 
 function drawRoll() {
+
     if (rollempty) { return initRoll(); }
 
     canvas.width = cellWidth * seqLen;
@@ -1248,7 +1249,7 @@ function drawRoll() {
             context.beginPath();
             context.rect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
 
-	    // if we're currently selecting and cell has note, check 
+	    // if we're currently selecting and cell has note, check
             // if cell overlaps selection rectangle and update status
 
             if (mousedown && (roll[i][j] == 1 || roll[i][j] == 2) ) {
@@ -1266,13 +1267,14 @@ function drawRoll() {
                     rect.topleftY = rect.startY + rect.h;
                     rect.borightY = rect.startY;
                 }
-	        if  (i*cellWidth > rect.topleftX - cellWidth
-                 && (i+1)*cellWidth < rect.borightX + cellWidth
-                 && j*cellHeight > rect.topleftY - cellHeight
-	         && (j+1)*cellHeight < rect.borightY + cellHeight) {
-		    roll[i][j] = 2; 
-                } else {
-		    roll[i][j] = 1;
+
+                if  (i*cellWidth > rect.topleftX - cellWidth
+                     && (i+1)*cellWidth < rect.borightX + cellWidth
+                     && j*cellHeight > rect.topleftY - cellHeight
+                    && (j+1)*cellHeight < rect.borightY + cellHeight) {
+                         roll[i][j] = 2;
+                    } else {
+                        roll[i][j] = 1;
                 }
             }
 
@@ -1583,7 +1585,7 @@ function drawMap() {
 
     // make table row of numbers
 
-    for (var i=0; i < nRows; i++) {
+    for (i=0; i < nRows; i++) {
         if (midiNotes[i] == 128) {
 	    break;
 	}
@@ -1593,7 +1595,7 @@ function drawMap() {
 
     // add table row of note names
 
-    for (var i=0; i < nRows; i++) {
+    for (i=0; i < nRows; i++) {
         if (midiNotes[i] == 128) {
 	    break;
 	}
@@ -2245,10 +2247,10 @@ var tonic = -1;
 var keysig = -1;
 
 function outputMei() {
-    var time = 0;
-    var bpm = Number(document.getElementById("bpm").value);
-    var duration = bpm * notesPerBeat * 24 / 60; // 24 MIDI clock ticks per beat
-    var output = [];
+    //var time = 0;
+    //var bpm = Number(document.getElementById("bpm").value);
+    //var duration = bpm * notesPerBeat * 24 / 60; // 24 MIDI clock ticks per beat
+    //var output = [];
 
     var imin = selected ? selleft : 0;
     var imax = selected ? selright : seqLen - 1;
@@ -2273,7 +2275,7 @@ function outputMei() {
     var maxnote = 0;
 
     for (var i=imin; i <= imax; i++) {
-        for (j=0; j < nRows; j++) {
+        for (var j=0; j < nRows; j++) {
             if (roll[i][nRows - j - 1] > (selected ? 1 : 0)) {
                 allnotes.push(midiNotes[j]);
                 if (midiNotes[j] < minnote) { minnote = midiNotes[j]; }
@@ -2297,7 +2299,7 @@ function outputMei() {
         var indexmin = Math.floor(allnotes.length / 4) - 1;
         var indexmax = Math.floor(allnotes.length * 3 / 4);
     
-        for (var i = indexmin; i < indexmax; i++) {
+        for (i = indexmin; i < indexmax; i++) {
             sum += allnotes[i];
             count++;
         }
@@ -2316,7 +2318,7 @@ function outputMei() {
 
     pitchclasses = pitchclasses.filter(function(e, i) {
         return pitchclasses.indexOf(e) == i;
-    })
+    });
 
     // try each major key to find key with smallest number of pitchclasses not in that key
 
@@ -2428,10 +2430,10 @@ function outputMei() {
 
     var bar = 1;
     var beat = 0;
-    var accidentals = [];
+    accidentals = [];
     var restduration = 0;
 
-    for (var i=imin; i <= imax; i++) {
+    for (i=imin; i <= imax; i++) {
         if (beat++ == 4) {
           bar++;
           output.push("        </layer>");
@@ -2759,24 +2761,84 @@ function initPage() {
     document.getElementById("modsequence").value = "";
 } 
 
-function generateLoads() {
-	console.log("Creating a load of MEI and MELD...")
+function agSelect( x, y, width, height ) {
+	mousedown = true;
 
+	rect.startX = x * cellWidth;
+	rect.startY = y * cellHeight;
+
+	rect.w = width * cellWidth;
+	rect.h = height * cellHeight;
+
+	pushSelection(); // push on selStack[]
+	writeMetadata(); // because metadata includes selection info
+	outputNoteNames();
+	drawRoll();
+
+	context.strokeStyle="Red";
+	context.strokeRect(rect.startX, rect.startY, rect.w, rect.h);
+	context.strokeStyle = 'LightGray';
+	mousedown = false;
+}
+function agOne( generateFunc, area, repeater ) {
 	// setup
-	doFibonacci();
+	generateFunc();
 	doModsequence();
-	initRoll();
+
+	agSelect( area.x, area.y, area.w, area.h);
 
 	// Generate files
 	outputMei();
 	outputMeld();
-	document.getElementById('meiform').submit();
-	// Save files
 
 	setTimeout( function() {
-		document.getElementById('meldform').submit();
-	}, 500 );
+	    // Submit to cgi-bin, but we need to wait for it to finish.
+		document.getElementById('meiform').submit();
 
+		setTimeout( function() {
+			document.getElementById('meldform').submit();
+
+			if( repeater ) {
+				repeater();
+			}
+		}, 1000 );
+
+    }, 1000 );
+	// Save files
+
+
+}
+function agManyLoop( number, end ) {
+
+    if( !number ) {
+        if( end ) {
+            end();
+        }
+        return;
+    }
+
+    var area = {
+	    x: Math.random() * 20,
+	    y: Math.random() * 20,
+	    w: Math.random() * 20 + 5,
+	    h: Math.random() * 20 + 5
+    };
+	agOne( doFibonacci, area, function() {
+	    agManyLoop( number-1 );
+    } );
+}
+
+function agMany( number ) {
+
+	console.log("Creating a load of MEI and MELD...");
+
+	document.getElementById('meiform').target = "singleview";
+	document.getElementById('meldform').target = "singleview";
+
+	agManyLoop( number, function() {
+		document.getElementById('meiform').target = "_blank";
+		document.getElementById('meldform').target = "_blank";
+    } );
 }
 
 // end of NotesIntoNumbers.js
