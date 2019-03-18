@@ -1114,7 +1114,7 @@ function mouseMove(e) {
     var i = Math.ceil((e.clientX - r.left) / cellWidth);
     var j = Math.ceil((e.clientY - r.top) / cellHeight);
 
-    document.getElementById("notenumber").innerHTML = nRows - j - 1;
+    document.getElementById("notenumber").innerHTML = nRows - j + 1;
     document.getElementById("notename").innerHTML = 
         midiNoteName(midiNotes[nRows - j - 1]);
     document.getElementById("noteindex").innerHTML = i;
@@ -2761,20 +2761,41 @@ function initPage() {
     document.getElementById("modsequence").value = "";
 } 
 
+function rand( from, to ) {
+    return Math.floor( Math.random() * to ) + from;
+}
+
 function agFindArea( length ) {
+	// TODO: Remember what we've generated before.
 
-    // Find a note
+    var col = rand(0, seqLen - length );
 
+	var row = Math.min( modSeq[col], modSeq[col+length-1] ) ;
+	var rowTo = Math.max( modSeq[col], modSeq[col+length-1] ) ;
+
+	var height = Math.max( rowTo - row + 1, 5 );
+
+	var area = {
+		x : col,
+		y : row,
+		w : length,
+		h : height
+	};
+
+	console.log( area );
+	//agSelect( area.x, area.y, area.w, area.h );
+
+	return area;
 }
 
 function agSelect( x, y, width, height ) {
 	mousedown = true;
 
 	rect.startX = x * cellWidth;
-	rect.startY = y * cellHeight;
+	rect.startY = canvas.height - (y * cellHeight);
 
 	rect.w = width * cellWidth;
-	rect.h = height * cellHeight;
+	rect.h = -height * cellHeight;
 
 	pushSelection(); // push on selStack[]
 	writeMetadata(); // because metadata includes selection info
@@ -2786,11 +2807,14 @@ function agSelect( x, y, width, height ) {
 	context.strokeStyle = 'LightGray';
 	mousedown = false;
 }
-function agOne( generateFunc, area, repeater ) {
+function agOne( generateFunc, length, repeater ) {
 	// setup
 	generateFunc();
 	doModsequence();
 
+	initRoll();
+
+	var area = agFindArea( length );
 	agSelect( area.x, area.y, area.w, area.h);
 
 	// Generate files
@@ -2814,7 +2838,7 @@ function agOne( generateFunc, area, repeater ) {
 
 
 }
-function agManyLoop( number, end ) {
+function agManyLoop( number, length, end ) {
 
     if( !number ) {
         if( end ) {
@@ -2823,28 +2847,32 @@ function agManyLoop( number, end ) {
         return;
     }
 
-    var area = {
-	    x: Math.random() * 20,
-	    y: Math.random() * 20,
-	    w: Math.random() * 20 + 5,
-	    h: Math.random() * 20 + 5
-    };
-
-	agOne( doFibonacci, area, function() {
-	    agManyLoop( number-1 );
+	agOne( doFibonacci, length, function() {
+	    agManyLoop( number-1, length );
     } );
 }
 
-function agMany( number ) {
+function agMany( number, length ) {
 
 	console.log("Creating a load of MEI and MELD...");
 
-	document.getElementById('meiform').target = "singleview";
-	document.getElementById('meldform').target = "singleview";
+	var winName = "singleview";
+	var win = window.open( '', winName, "toolbar=no,scrollbars=no,resizable=yes,top=300,left=300,width=400,height=200" );
 
-	agManyLoop( number, function() {
+	win.document.write("<html><h1 style='text-align: center'>Working...</h1></html>");
+	win.blur();
+	window.focus();
+	window.location = '#pianoroll';
+
+	document.getElementById('meiform').target = winName;
+	document.getElementById('meldform').target = winName;
+
+	agManyLoop( number, length, function() {
+		win.close();
+
 		document.getElementById('meiform').target = "_blank";
 		document.getElementById('meldform').target = "_blank";
+
     } );
 }
 
