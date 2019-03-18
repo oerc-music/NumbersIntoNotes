@@ -1304,7 +1304,7 @@ function drawRoll() {
     }
     document.getElementById("selected").innerHTML = selected ? selected : "";
     // JPNP make t easier to create fragments with specific width
-    document.getElementById("selectwidth").innerHTML = selleft<selright ? selright - selleft : "";
+    document.getElementById("selectwidth").innerHTML = selleft <= selright ? selright - selleft + 1 : "";
 }
 
 function selectAll() {
@@ -2761,6 +2761,12 @@ function initPage() {
     document.getElementById("modsequence").value = "";
 } 
 
+function agFindArea( length ) {
+
+    // Find a note
+
+}
+
 function agSelect( x, y, width, height ) {
 	mousedown = true;
 
@@ -2823,6 +2829,7 @@ function agManyLoop( number, end ) {
 	    w: Math.random() * 20 + 5,
 	    h: Math.random() * 20 + 5
     };
+
 	agOne( doFibonacci, area, function() {
 	    agManyLoop( number-1 );
     } );
@@ -2839,6 +2846,13 @@ function agMany( number ) {
 		document.getElementById('meiform').target = "_blank";
 		document.getElementById('meldform').target = "_blank";
     } );
+}
+
+function r() {
+	doFibonacci();
+    doModsequence();
+
+    initRoll();
 }
 
 // end of NotesIntoNumbers.js
