@@ -1489,8 +1489,8 @@ var octave;	// -2 to 8
 var midiOffset; // added on mapping
 var scale = [];	// array of intervals
 
-setPitch(0);			// C
-setOctave(1);			// C1
+setPitch(0);			// C (0 to 11)
+setOctave(1);			// C1 (-2 to 8)
 setScale([2,2,1,2,2,2,1]); 	// default to major scale
 
 function setPitch(i) {
@@ -1682,7 +1682,7 @@ function initAudio() {
     // clear up any existing contexts
 
     for (var i=0; i < audioContexts.length; i++) {
-        audioContexts[i].close(); 
+        audioContexts[i].close();
     }
     audioContexts = [];
 
@@ -1736,7 +1736,7 @@ function startAudio(inst) {
 }
 
 function playStop() {
-    for (var i=0; i < audioSources.length; i++) { 
+    for (var i=0; i < audioSources.length; i++) {
         audioSources[i] && audioSources[i].stop(0);
     }
     audioSources = [];
@@ -2761,13 +2761,34 @@ function initPage() {
     document.getElementById("modsequence").value = "";
 } 
 
+//
+// Auto generation files follow
+//
+var agExportList = [];
+var funcs = [
+	doFibonacci,
+	doPowers,
+
+	doPrimes,
+	doPi,
+	doPhi,
+	doRandom,
+	doDiceWalk,
+
+	doTribonacci,
+	doTriangle,
+	doFactorial,
+	doSin,
+	doBernoullinumerators,
+	doBernoullidenominators
+];
+
+
 function rand( from, to ) {
-    return Math.floor( Math.random() * to ) + from;
+    return Math.floor( Math.random() * (to-from+1) ) + from;
 }
 
-var agExportList = [];
 function agFindArea( length, start ) {
-	// TODO: Remember what we've generated before.
 
 	var col;
 	if( start !== undefined ) {
@@ -2794,7 +2815,7 @@ function agFindArea( length, start ) {
 		h : height
 	};
 
-	console.log( area );
+	//console.log( area );
 	//agSelect( area.x, area.y, area.w, area.h );
 
 	return area;
@@ -2820,56 +2841,61 @@ function agSelect( x, y, width, height ) {
 	mousedown = false;
 }
 
-function agAlreadyExists( ex ) {
+function agExportAlreadyExists(ex ) {
 	for( var i=0, z=agExportList.length; i<z; i++ ) {
 		var exComp = agExportList[i];
-		if( ex.func === exComp.func ) {
-			if( ex.area.x === exComp.area.x &&
-				ex.area.y === exComp.area.y &&
-				ex.area.w === exComp.area.w &&
-				ex.area.h === exComp.area.h   ) {
-				return true
-			}
+		if( agCompareExport(ex, exComp) ) {
+			return true;
 		}
 	}
 
 	return false;
 }
 
-function agOne( generateFunc, length, repeater ) {
-	// setup
-	generateFunc();
-	doModsequence();
+function agCompareExport( e1, e2 ) {
+	return e1.settings.func === e2.settings.func &&
+		e1.settings.pitch === e2.settings.pitch &&
+		e1.settings.octave === e2.settings.octave &&
+		e1.settings.scale === e2.settings.scale &&
+		e1.area.x === e2.area.x &&
+		e1.area.y === e2.area.y &&
+		e1.area.w === e2.area.w &&
+		e1.area.h === e2.area.h;
+}
 
-	if (rollempty) {
-		initRoll();
-	}
+function agOne( settings, repeater ) {
+
+	setPitch(settings.pitch);
+	setOctave(settings.octave);
+	setScale(settings.scale);
 
 	var ex = {
-		func: generateFunc,
-		area: agFindArea( length )
+		settings: settings,
+		area: agFindArea( settings.length )
 	};
 
 	var initialX = ex.area.x;
-	while( agAlreadyExists( ex ) ) {
+	while( agExportAlreadyExists( ex ) ) {
 
 		console.log("repeat for x=" + ex.area.x );
 		var nextX = (ex.area.x + 1) % seqLen;
 
 		if( nextX === initialX ) {
 			// Giving up as no more notes left.
-			var error = "Can't find a new sequence of length " + length;
+			var error = "Can't find a new sequence of length " + settings.length;
 			if( repeater ) {
 				repeater( error );
 			}
 			return;
 		}
 
-		ex.area = agFindArea( length, nextX );
+		ex.area = agFindArea( settings.length, nextX );
 	}
 
 	agExportList.push( ex );
 	agSelect(ex.area.x, ex.area.y, ex.area.w, ex.area.h);
+
+	console.log( ex );
 
 	// Generate files
 	outputMei();
@@ -2889,7 +2915,7 @@ function agOne( generateFunc, length, repeater ) {
 
     }, 200 );
 }
-function agManyLoop( number, length, end ) {
+function agManyLoop( settings, number, end ) {
 
     if( !number ) {
         if( end ) {
@@ -2898,42 +2924,118 @@ function agManyLoop( number, length, end ) {
         return;
     }
 
-	console.log( "To go: " + number );
-	agOne( doFibonacci, length, function( error ) {
+	agOne( settings, function( error ) {
 		if( error ) {
 			console.error( error );
 			return;
 		}
-	    agManyLoop( number-1, length );
+	    agManyLoop( settings, number-1, end );
     } );
 }
 
-function agMany( number, length ) {
+function agStartLoop( settingsList, number, end ) {
+
+	if( number === settingsList.length ) {
+		if( end ) {
+			end();
+		}
+		return;
+	}
+
+	var settings = settingsList[number];
+
+	settings.func();
+	doModsequence();
+	initRoll();
+
+	agManyLoop( settings, settings.number, function() {
+		console.log("Done a set!");
+		agStartLoop( settingsList, number + 1, end );
+	})
+}
+
+function agStart( settingsList ) {
 
 	console.log("Creating a load of MEI and MELD...");
+	console.log( settingsList );
 
 	var winName = "singleview";
-	var win = window.open( '', winName, "toolbar=no,scrollbars=no,resizable=yes,top=300,left=300,width=400,height=200" );
-
+	var win = window.open( '#', winName, "toolbar=no,scrollbars=no,resizable=yes,top=300,left=300,width=400,height=200" );
 	win.document.write("<html><h1 style='text-align: center'>Working...</h1></html>");
-	window.location = '#pianoroll';
 
-	document.getElementById('meiform').target = winName;
-	document.getElementById('meldform').target = winName;
+	setTimeout( function() {
+		// Pause, to wait for the window to finish loading.
+		window.location = '#pianoroll';
 
-	agManyLoop( number, length, function() {
-		win.document.write("<html><h1 style='text-align: center'>Finished!</h1></html>");
-		win.close(); // doesn't work
-		document.getElementById('meiform').target = "_blank";
-		document.getElementById('meldform').target = "_blank";
-    } );
+		document.getElementById('meiform').target = winName;
+		document.getElementById('meldform').target = winName;
+
+		agStartLoop(settingsList, 0, function () {
+			console.log("Done All!");
+
+			win.document.write("<html><h1 style='text-align: center'>Finished!</h1></html>");
+			win.close(); // doesn't work
+			document.getElementById('meiform').target = "_blank";
+			document.getElementById('meldform').target = "_blank";
+		});
+	}, 500 );
 }
 
+function agDoRandomSets( sets ) {
+
+	var settingsList = [];
+	for (var i = 0, z = sets || 10; i < z; i++) {
+		settingsList.push({
+			number: rand(3, 8),
+			length: rand(5, 10),
+			func: funcs[rand(0,funcs.length)],
+			pitch: rand(0, 11),
+			octave: rand(-2, 8),
+			scale: [2, 2, 1, 2, 2, 2, 1]
+		} );
+	}
+	agStart( settingsList );
+}
+
+function agDoAllFuncsSet() {
+
+	var settingsList = [];
+	for (var i = 0, z = funcs.length; i < z; i++) {
+		settingsList.push({
+			number: 3,
+			length: 10,
+			func: funcs[i],
+			pitch: 2,
+			octave: 2,
+			scale: [2, 2, 1, 2, 2, 2, 1]
+		} );
+	}
+	agStart( settingsList );
+}
+
+function agDoDifferentLengthsSet( number, func ) {
+
+	var settingsList = [];
+	for( var i=6; i<=10; i += 2) {
+		settingsList.push({
+			number: number || 10,
+			length: i,
+			func: func || doFibonacci,
+			pitch: 2,
+			octave: 2,
+			scale: [2, 2, 1, 2, 2, 2, 1]
+		});
+	}
+	agStart( settingsList )
+}
+// A quick setup
 function r() {
 	doFibonacci();
     doModsequence();
 
     initRoll();
 }
+
+
 
 // end of NotesIntoNumbers.js
