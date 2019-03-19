@@ -2765,10 +2765,22 @@ function rand( from, to ) {
     return Math.floor( Math.random() * to ) + from;
 }
 
-function agFindArea( length ) {
+var agExportList = [];
+function agFindArea( length, start ) {
 	// TODO: Remember what we've generated before.
 
-    var col = rand(0, seqLen - length );
+	var col;
+	if( start !== undefined ) {
+		if( start > (seqLen - length) ) {
+			col = 0;
+		} else {
+			col = start;
+		}
+	}
+	else {
+		col = rand(0, seqLen - length);
+	}
+
 
 	var row = Math.min( modSeq[col], modSeq[col+length-1] ) ;
 	var rowTo = Math.max( modSeq[col], modSeq[col+length-1] ) ;
@@ -2807,15 +2819,57 @@ function agSelect( x, y, width, height ) {
 	context.strokeStyle = 'LightGray';
 	mousedown = false;
 }
+
+function agAlreadyExists( ex ) {
+	for( var i=0, z=agExportList.length; i<z; i++ ) {
+		var exComp = agExportList[i];
+		if( ex.func === exComp.func ) {
+			if( ex.area.x === exComp.area.x &&
+				ex.area.y === exComp.area.y &&
+				ex.area.w === exComp.area.w &&
+				ex.area.h === exComp.area.h   ) {
+				return true
+			}
+		}
+	}
+
+	return false;
+}
+
 function agOne( generateFunc, length, repeater ) {
 	// setup
 	generateFunc();
 	doModsequence();
 
-	initRoll();
+	if (rollempty) {
+		initRoll();
+	}
 
-	var area = agFindArea( length );
-	agSelect( area.x, area.y, area.w, area.h);
+	var ex = {
+		func: generateFunc,
+		area: agFindArea( length )
+	};
+
+	var initialX = ex.area.x;
+	while( agAlreadyExists( ex ) ) {
+
+		console.log("repeat for x=" + ex.area.x );
+		var nextX = (ex.area.x + 1) % seqLen;
+
+		if( nextX === initialX ) {
+			// Giving up as no more notes left.
+			var error = "Can't find a new sequence of length " + length;
+			if( repeater ) {
+				repeater( error );
+			}
+			return;
+		}
+
+		ex.area = agFindArea( length, nextX );
+	}
+
+	agExportList.push( ex );
+	agSelect(ex.area.x, ex.area.y, ex.area.w, ex.area.h);
 
 	// Generate files
 	outputMei();
@@ -2831,12 +2885,9 @@ function agOne( generateFunc, length, repeater ) {
 			if( repeater ) {
 				repeater();
 			}
-		}, 1000 );
+		}, 200 );
 
-    }, 1000 );
-	// Save files
-
-
+    }, 200 );
 }
 function agManyLoop( number, length, end ) {
 
@@ -2847,7 +2898,12 @@ function agManyLoop( number, length, end ) {
         return;
     }
 
-	agOne( doFibonacci, length, function() {
+	console.log( "To go: " + number );
+	agOne( doFibonacci, length, function( error ) {
+		if( error ) {
+			console.error( error );
+			return;
+		}
 	    agManyLoop( number-1, length );
     } );
 }
@@ -2860,19 +2916,16 @@ function agMany( number, length ) {
 	var win = window.open( '', winName, "toolbar=no,scrollbars=no,resizable=yes,top=300,left=300,width=400,height=200" );
 
 	win.document.write("<html><h1 style='text-align: center'>Working...</h1></html>");
-	win.blur();
-	window.focus();
 	window.location = '#pianoroll';
 
 	document.getElementById('meiform').target = winName;
 	document.getElementById('meldform').target = winName;
 
 	agManyLoop( number, length, function() {
-		win.close();
-
+		win.document.write("<html><h1 style='text-align: center'>Finished!</h1></html>");
+		win.close(); // doesn't work
 		document.getElementById('meiform').target = "_blank";
 		document.getElementById('meldform').target = "_blank";
-
     } );
 }
 
