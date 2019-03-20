@@ -123,11 +123,17 @@ function doTriangle() {
 // n0, n1 and k are obtained from DOM where they must be numbers
 // k is corrected if out of range 1-99
 
-function doFibonacci() {
+function doFibonacci( n0, n1, k ) {
     seqLen = maxSeqLen;
-    var n0 = Number(document.getElementById("n0").value);
-    var n1 = Number(document.getElementById("n1").value);
-    var k = Number(document.getElementById("k").value);
+	if( n0 === undefined || n0 === null ) {
+		n0 = Number(document.getElementById("n0").value);
+	}
+	if( n1 === undefined || n1 === null ) {
+        n1 = Number(document.getElementById("n1").value);
+    }
+	if( k === undefined || k === null ) {
+		k = Number(document.getElementById("k").value);
+	}
 
     if (k < 1) { k = 1; document.getElementById("k").value = 1; } 
     else if (k > 99) { k = 99; document.getElementById("k").value = 99; } 
@@ -146,11 +152,18 @@ function doFibonacci() {
 // Generate sequence F(n+1) = F(n) + F(n-1) + F(n-2)
 // n0, n1 and n2 are obtained from DOM where they must be numbers
 
-function doTribonacci() {
-    seqLen = maxSeqLen;
-    var n0 = Number(document.getElementById("t0").value);
-    var n1 = Number(document.getElementById("t1").value);
-    var n2 = Number(document.getElementById("t2").value);
+function doTribonacci(n0,n1,n2) {
+	if( n0 === undefined || n0 === null ) {
+		n0 = Number(document.getElementById("t0").value);
+	}
+	if( n1 === undefined || n1 === null ) {
+		n1 = Number(document.getElementById("t1").value);
+	}
+	if( n2 === undefined || n2 === null ) {
+		n2 = Number(document.getElementById("t2").value);
+	}
+
+	seqLen = maxSeqLen;
 
     seq[0] = Big(n0);
     seq[1] = Big(n1);
@@ -167,9 +180,11 @@ function doTribonacci() {
 // Generate sequence of base^i where i=0,1,..
 // base is obtained from DOM and corrected if out of range 2-99
 
-function doPowers() {
-    seqLen = maxSeqLen;
-    var b = Number(document.getElementById("base").value);
+function doPowers(b) {
+	if( b === undefined || b === null ) {
+		b = Number(document.getElementById("base").value);
+	}
+	seqLen = maxSeqLen;
 
     if (b < 2) { b = 2; document.getElementById("base").value = 2; } 
     else if (b > 99) { b = 99; document.getElementById("base").value = 99; } 
@@ -220,7 +235,7 @@ function doPowers() {
 // 0.000803121x^2 + 7.15392x - 132.177
 
 function doPrimes(n) {
-    if (isNaN(n) || n < 0) { n = 0; }
+    if (n === null || isNaN(n) || n < 0) { n = 0; }
 
     // if n is zero we want maxSeqLen primes, so we set sievesize
     // to be more than enough.  A factor of 8 is an overapproximation 
@@ -274,9 +289,13 @@ function doPrimes(n) {
 // Default modulus is set to default to 2a+1 unless a>63 when the 
 // amplitude needs manual modulo reduction.
 
-function doSin() {
-    var a = Number(document.getElementById("amplitude").value);
-    var r = Number(document.getElementById("r").value) * Math.PI / 180;
+function doSin( a, r ) {
+	if( a === undefined || a === null ) {
+		a = Number(document.getElementById("amplitude").value);
+	}
+	if( r === undefined || r === null ) {
+		r = Number(document.getElementById("r").value) * Math.PI / 180;
+	}
 
     seqLen = maxSeqLen;
 
@@ -294,8 +313,10 @@ function doSin() {
 // Generate random number between 0 and n-1
 // n is obtained from DOM and corrected if out of range 2-999
 
-function doRandom() {
-    var n = Number(document.getElementById("random").value);
+function doRandom(n) {
+	if( n === undefined || n === null ) {
+		n = Number(document.getElementById("random").value);
+	}
 
     if (n < 2) {
         n = 2;
@@ -320,8 +341,10 @@ function doRandom() {
 // Uses same value from DOM as random, to set range (rows) of grid.
 // Finishes when hits boundary or at maxseqlen and sets seqlen accordingly.
 
-function doRandomWalk() {
-    var n = Number(document.getElementById("random").value);
+function doRandomWalk(n) {
+	if( n === undefined || n === null ) {
+		n = Number(document.getElementById("random").value);
+	}
 
     if (n < 2) {
         n = 2;
@@ -377,8 +400,10 @@ function doRandomWalk() {
 // For range of 84 the average chain length empirically seems to be 320 ish
 // For range of 100 the average chain length empirically seems to be 450 ish
 
-function doDiceWalk() {
-    var n = Number(document.getElementById("random").value);
+function doDiceWalk( n ) {
+	if( n === undefined || n === null ) {
+		n = Number(document.getElementById("random").value);
+	}
 
     if (n < 2) {
         n = 2;
@@ -418,7 +443,7 @@ function doDiceWalk() {
 // Default modulus is set to 10
 
 function doPi(n) {
-    if (isNaN(n) || n < 1 || n > maxSeqLen) { n = 160; }
+    if (n === null || isNaN(n) || n < 1 || n > maxSeqLen) { n = 160; }
     Big.DP = n;
     seqLen = n;
 
@@ -467,7 +492,7 @@ function arctan(x) {
 // Default modulus is set to 10
 
 function doPhi(n) {
-    if (isNaN(n) || n < 1 || n > maxSeqLen) { n = 200; }
+    if (n === null || isNaN(n) || n < 1 || n > maxSeqLen) { n = 200; }
     Big.DP = n;
     seqLen = n;
 
@@ -495,7 +520,7 @@ function doPhi(n) {
 // n is provided in the function call else defaults to 24
 
 function doBernoullinumerators(n) {
-    if (isNaN(n) || n < 1 || n > 32) { n = 24; }
+    if (n === null || isNaN(n) || n < 1 || n > 32) { n = 24; }
     seqLen = n;
 
     for (var i=0; i < seqLen; i++) {
@@ -507,7 +532,7 @@ function doBernoullinumerators(n) {
 }
 
 function doBernoullidenominators(n) {
-    if (isNaN(n) || n < 1 || n > 32) { n = 24; }
+    if (n === null || isNaN(n) || n < 1 || n > 32) { n = 24; }
     seqLen = n;
 
     for (var i=0; i < seqLen; i++) {
@@ -524,7 +549,7 @@ function doBernoullidenominators(n) {
 // Throws errors if sequence not valid
 
 function setSeq(s) {
-    if (s == undefined) { 
+    if (s == undefined) {
         throw "No sequence provided in setSeq";
     }
     if (s.length < 2) { 
@@ -2766,23 +2791,32 @@ function initPage() {
 //
 var agExportList = [];
 var funcs = [
-	doFibonacci,
-	doPowers,
+	doFibonacci, // inputs: n0, n1, k
+	doPowers, // inputs: b
 
-	doPrimes,
-	doPi,
-	doPhi,
-	doRandom,
-	doDiceWalk,
+	doPrimes, // inputs: n
+	doPi, // inputs: n
+	doPhi, // inputs: n
+	doRandom, // inputs: n
+	doDiceWalk, // inputs: n
 
-	doTribonacci,
-	doTriangle,
-	doFactorial,
-	doSin,
-	doBernoullinumerators,
-	doBernoullidenominators
+	doTribonacci, // inputs: n0, n1, n2
+	doTriangle, // inputs:
+	doFactorial,// inputs:
+	doSin, // inputs: a, r
+	doBernoullinumerators, // inputs: n
+	doBernoullidenominators // inputs: n
 ];
-
+var scales = [
+	[2,2,1,2,2,2,1], // Major
+	[2,1,2,2,1,2,2], // Natural minor
+	[2,1,2,2,1,3,1], // Harmonic minor
+	[2,2,1,2,1,3,1], // Harmonic major
+	[2,2,3,2,3], // Pentatonic
+	[2], // Whole Tone
+	[1] // Chromatic
+];
+var modulusElement = document.getElementById("modulus");
 
 function rand( from, to ) {
     return Math.floor( Math.random() * (to-from+1) ) + from;
@@ -2802,23 +2836,17 @@ function agFindArea( length, start ) {
 		col = rand(0, seqLen - length);
 	}
 
-
 	var row = Math.min( modSeq[col], modSeq[col+length-1] ) ;
 	var rowTo = Math.max( modSeq[col], modSeq[col+length-1] ) ;
 
 	var height = Math.max( rowTo - row + 1, 5 );
 
-	var area = {
+	return {
 		x : col,
 		y : row,
 		w : length,
 		h : height
 	};
-
-	//console.log( area );
-	//agSelect( area.x, area.y, area.w, area.h );
-
-	return area;
 }
 
 function agSelect( x, y, width, height ) {
@@ -2944,7 +2972,9 @@ function agStartLoop( settingsList, number, end ) {
 
 	var settings = settingsList[number];
 
-	settings.func();
+	modulusElement.value = settings.modulus || 35;
+	settings.func.apply( null, settings.funcParams );
+
 	doModsequence();
 	initRoll();
 
@@ -2981,18 +3011,24 @@ function agStart( settingsList ) {
 	}, 500 );
 }
 
+function agGetExport(random) {
+	return {
+		number: random ? rand(3, 8) : 3,
+		length: random ? rand(5, 10) : 8,
+		modulus: random ? rand(17, 35) : 35,
+		func: random ? funcs[rand(0,funcs.length)] : funcs[0],
+		funcParams: random ? null /* todo */ : [0, 1, 1],
+		pitch: random ? rand(0, 11) : 2,
+		octave: random ? rand(0, 7) /* -2, 8 */ : 2,
+		scale: random ? scales[rand(0,scales.length)] : scales[0]
+	};
+}
+
 function agDoRandomSets( sets ) {
 
 	var settingsList = [];
 	for (var i = 0, z = sets || 10; i < z; i++) {
-		settingsList.push({
-			number: rand(3, 8),
-			length: rand(5, 10),
-			func: funcs[rand(0,funcs.length)],
-			pitch: rand(0, 11),
-			octave: rand(-2, 8),
-			scale: [2, 2, 1, 2, 2, 2, 1]
-		} );
+		settingsList.push( agGetExport( true ) );
 	}
 	agStart( settingsList );
 }
@@ -3001,33 +3037,74 @@ function agDoAllFuncsSet() {
 
 	var settingsList = [];
 	for (var i = 0, z = funcs.length; i < z; i++) {
-		settingsList.push({
-			number: 3,
-			length: 10,
-			func: funcs[i],
-			pitch: 2,
-			octave: 2,
-			scale: [2, 2, 1, 2, 2, 2, 1]
-		} );
+		var setting = agGetExport();
+
+		setting.func = funcs[i];
+		setting.funcParams = [];
+
+		settingsList.push( setting );
 	}
 	agStart( settingsList );
 }
 
-function agDoDifferentLengthsSet( number, func ) {
+function agDoDifferentLengthsSet() {
 
 	var settingsList = [];
 	for( var i=6; i<=10; i += 2) {
-		settingsList.push({
-			number: number || 10,
-			length: i,
-			func: func || doFibonacci,
-			pitch: 2,
-			octave: 2,
-			scale: [2, 2, 1, 2, 2, 2, 1]
-		});
+		var setting = agGetExport();
+		setting.length = i;
+		settingsList.push( setting );
 	}
 	agStart( settingsList )
 }
+
+function agDoSample() {
+
+	var settingsList = [], setting, pitch, len;
+
+	// fibonacci, 3 outputs * lengths:6,8,10 * pitch: 2,3,4 = 27 files.
+	for (pitch = 2; pitch <= 4; pitch++) {
+		for (len = 6; len <= 10; len += 2) {
+			setting = agGetExport();
+
+			setting.number = 3;
+			setting.length = len;
+			setting.pitch = pitch;
+
+			settingsList.push(setting);
+		}
+	}
+
+	// fibonacci (lucas numbers), 3 outputs * lengths:6,8,10 * pitch: 2,3,4 = 27 files.
+	for (pitch = 2; pitch <= 4; pitch++) {
+		for (len = 6; len <= 10; len += 2) {
+			setting = agGetExport();
+
+			setting.funcParams = [2, 1, 1];
+			setting.number = 3;
+			setting.length = len;
+			setting.pitch = pitch;
+
+			settingsList.push(setting);
+		}
+	}
+
+	// powers, 3 outputs * lengths:6,8,10 * pitch: 2,3,4 = 27 files.
+	for (pitch = 2; pitch <= 4; pitch++) {
+		for (len = 6; len <= 10; len += 2) {
+			setting = agGetExport();
+
+			setting.func = doPowers;
+			setting.number = 3;
+			setting.length = len;
+			setting.pitch = pitch;
+
+			settingsList.push(setting);
+		}
+	}
+	agStart(settingsList);
+}
+
 // A quick setup
 function r() {
 	doFibonacci();
@@ -3035,7 +3112,5 @@ function r() {
 
     initRoll();
 }
-
-
 
 // end of NotesIntoNumbers.js
