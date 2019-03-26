@@ -2929,18 +2929,19 @@ function agOne( settings, repeater ) {
 	outputMei();
 	outputMeld();
 
+	// Submit to cgi-bin, but we need to wait for it to finish.
+	document.getElementById('meiform').submit();
+
 	setTimeout( function() {
-	    // Submit to cgi-bin, but we need to wait for it to finish.
-		document.getElementById('meiform').submit();
+
+		document.getElementById('meldform').submit();
 
 		setTimeout( function() {
-			document.getElementById('meldform').submit();
 
 			if( repeater ) {
 				repeater();
 			}
 		}, 200 );
-
     }, 200 );
 }
 function agManyLoop( settings, number, end ) {
@@ -2981,13 +2982,10 @@ function agStartLoop( settingsList, number, end ) {
 	agManyLoop( settings, settings.number, function() {
 		console.log("Done a set!");
 		agStartLoop( settingsList, number + 1, end );
-	})
+	});
 }
 
 function agStart( settingsList ) {
-
-	console.log("Creating a load of MEI and MELD...");
-	console.log( settingsList );
 
 	var winName = "singleview";
 	var win = window.open( '#', winName, "toolbar=no,scrollbars=no,resizable=yes,top=300,left=300,width=400,height=200" );
@@ -3004,9 +3002,11 @@ function agStart( settingsList ) {
 			console.log("Done All!");
 
 			win.document.write("<html><h1 style='text-align: center'>Finished!</h1></html>");
-			win.close(); // doesn't work
+
 			document.getElementById('meiform').target = "_blank";
 			document.getElementById('meldform').target = "_blank";
+			
+			win.close();
 		});
 	}, 500 );
 }
@@ -3016,24 +3016,17 @@ function agGetExport(random) {
 		number: random ? rand(3, 8) : 3,
 		length: random ? rand(5, 10) : 8,
 		modulus: random ? rand(17, 35) : 35,
-		func: random ? funcs[rand(0,funcs.length)] : funcs[0],
+		func: random ? funcs[rand(0,funcs.length-1)] : funcs[0],
 		funcParams: random ? null /* todo */ : [0, 1, 1],
 		pitch: random ? rand(0, 11) : 2,
 		octave: random ? rand(0, 7) /* -2, 8 */ : 2,
-		scale: random ? scales[rand(0,scales.length)] : scales[0]
+		scale: random ? scales[rand(0,scales.length-1)] : scales[0]
 	};
 }
 
-function agDoRandomSets( sets ) {
-
-	var settingsList = [];
-	for (var i = 0, z = sets || 10; i < z; i++) {
-		settingsList.push( agGetExport( true ) );
-	}
-	agStart( settingsList );
-}
-
 function agDoAllFuncsSet() {
+
+	console.log("Creating three MEI/MELD combinations for each available generate function.");
 
 	var settingsList = [];
 	for (var i = 0, z = funcs.length; i < z; i++) {
@@ -3049,17 +3042,51 @@ function agDoAllFuncsSet() {
 
 function agDoDifferentLengthsSet() {
 
+	console.log("Creating three MEI/MELD combinations with three different lengths.");
 	var settingsList = [];
 	for( var i=6; i<=10; i += 2) {
 		var setting = agGetExport();
 		setting.length = i;
 		settingsList.push( setting );
 	}
-	agStart( settingsList )
+	agStart( settingsList );
 }
 
-function agDoSample() {
+function agDoSingleSame() {
 
+	console.log("Creating a single MEI/MELD combination with default values.");
+	var setting = agGetExport();
+	setting.number = 1;
+	agStart( [setting] );
+}
+function agDoSingleRandom() {
+	agDoRandomSets(1,1);
+}
+function agDoRandom(num) {
+	if( num === undefined ) {
+		console.log( "You need to specify the number you want to create." );
+	}
+	else {
+		agDoRandomSets(1,num);
+	}
+}
+function agDoRandomSets(sets,num) {
+	if( num === undefined || sets === undefined ) {
+		console.log( "You need to specify the number of sets, and the number in each set you want to create." );
+	}
+	else {
+		console.log("Creating " + sets + " random sets using MEI/MELD combination with " + num + " in each set.");
+		var settingsList = [];
+		for( var i=0; i < sets; i++ ) {
+			var setting = agGetExport(true);
+			setting.number = num;
+			settingsList.push( setting );
+		}
+		agStart(settingsList);
+	}
+}
+function agDoSample() {
+	console.log("Creating a sample of MEI/MELD combination using three functions, three different lengths, and three different pitch");
 	var settingsList = [], setting, pitch, len;
 
 	// fibonacci, 3 outputs * lengths:6,8,10 * pitch: 2,3,4 = 27 files.
