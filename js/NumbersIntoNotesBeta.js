@@ -2987,6 +2987,12 @@ function agStartLoop( settingsList, number, end ) {
 
 function agStart( settingsList ) {
 
+	var count = 0;
+	for(var i=0, z=settingsList.length; i<z; i++ ) {
+		count += settingsList[i].number;
+	}
+	console.log("Creating " + count + " MELD and MEI files");
+
 	var winName = "singleview";
 	var win = window.open( '#', winName, "toolbar=no,scrollbars=no,resizable=yes,top=300,left=300,width=400,height=200" );
 	win.document.write("<html><h1 style='text-align: center'>Working...</h1></html>");
@@ -3001,12 +3007,15 @@ function agStart( settingsList ) {
 		agStartLoop(settingsList, 0, function () {
 			console.log("Done All!");
 
-			win.document.write("<html><h1 style='text-align: center'>Finished!</h1></html>");
+			win.document.write("<html><h1 style='text-align: center'>Finished " + count + " outputs!</h1></html>");
 
 			document.getElementById('meiform').target = "_blank";
 			document.getElementById('meldform').target = "_blank";
-			
-			win.close();
+
+			setTimeout( function() {
+				// Display "Finished" before we close the window.
+				win.close();
+			}, 500 );
 		});
 	}, 500 );
 }
