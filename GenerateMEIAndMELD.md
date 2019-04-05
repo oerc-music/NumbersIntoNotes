@@ -103,9 +103,9 @@ If you'd like to generate but e.g. use a single function, just adjust that parti
 
 There are also few helper functions to help generate sets.
 
-`agDoSample()` will generate a nice selection of settings
-`agDoRandomSets( sets, number )` will generate a random set, then produce 
+ - `agDoSample()` will generate a nice selection of settings
+ - `agDoRandomSets( sets, number )` will generate a random set, then produce 
 several with the same settings (but random position)
-`agDoDifferentLengthsSet()` will generate the same values all but length
-`agDoAllFuncsSet` will generate the same values for each function available.
+ - `agDoDifferentLengthsSet()` will generate the same values all but length
+ - `agDoAllFuncsSet` will generate the same values for each function available.
 
